@@ -92,11 +92,9 @@ public class TestBot1 extends DefaultBWListener {
         game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
 
         macroCycle();
-        
-        //game.drawTextScreen(10, 25, "text");
-        
-        StringBuilder units = new StringBuilder("My units:\n");
 
+        //the old code for writing all units on the screen
+        StringBuilder units = new StringBuilder("My units:\n");
         //iterate through my units
         for (Unit myUnit : self.getUnits()) 
         {
