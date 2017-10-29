@@ -12,12 +12,15 @@ public class TestBot1 extends DefaultBWListener {
     
     private Position startingPosition;
     
+    //private Integer availableMinerals = 0;
+    
     private State currentState;
 
 	private static State state1;
 	private static State state2;
 	private static State state3;
 	private static State state4;
+	private static State state5;
 
 	
     
@@ -33,17 +36,21 @@ public class TestBot1 extends DefaultBWListener {
 
     public void macroCycle()
     {
-    	game.drawTextScreen(300, 300, "test");
+    	//Integer self.minerals() = self.minerals();
+    	game.drawTextScreen(300, 300, Integer.toString(self.minerals()));
     	for(Unit myUnit : self.getUnits()) 
     	{
+    		
             //if there's enough minerals, train an SCV
             if (myUnit.getType() == UnitType.Terran_Command_Center && self.minerals() >= 50 && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_SCV);
+                //self.minerals() -= 50;
             }
             
             //if there's enough minerals, train a marine
             if (myUnit.getType() == UnitType.Terran_Barracks && self.minerals() >= 50 && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_Marine);
+                //self.minerals() -= 50;
             }
             
             // if it's a worker and it's idle, send it to the closest mineral patch
@@ -86,6 +93,7 @@ public class TestBot1 extends DefaultBWListener {
         System.out.println("Map data ready");
         
         game.enableFlag(1);
+        game.setLocalSpeed(8);
         
         int i = 0;
         for(BaseLocation baseLocation : BWTA.getBaseLocations()){
@@ -100,14 +108,17 @@ public class TestBot1 extends DefaultBWListener {
         startingPosition = BWTA.getStartLocation(self).getPosition();
         
         //hardcoded stuff
-        state1 = new State();
+        /*state1 = new State();
         state2 = new State();
         state3 = new State();
         state4 = new State();
+        state5 = new State();
         
         state1.setNext(state2);
         state2.setNext(state3);
         state3.setNext(state4);
+        state4.setNext(state5);
+        state5.setNext(state5);
         
         state1.setUnitType(UnitType.Terran_Supply_Depot);
         state1.setSupply(8);
@@ -118,10 +129,13 @@ public class TestBot1 extends DefaultBWListener {
         state3.setUnitType(UnitType.Terran_Barracks);
         state3.setSupply(11);
         
-        state4.setUnitType(UnitType.Terran_Barracks);
-        state4.setSupply(18);
+        state4.setUnitType(UnitType.Terran_Supply_Depot);
+        state4.setSupply(15);
         
-        currentState = state1;
+        state5.setUnitType(UnitType.Terran_Barracks);
+        state5.setSupply(200);
+        
+        currentState = state1;*/
         
 
     }
@@ -158,19 +172,44 @@ public class TestBot1 extends DefaultBWListener {
     
     public void stuffBuilder()
     {
+    	//System.out.print(self.minerals());
 		for (Unit myUnit : self.getUnits()) {
 			// If it is a worker, check build order.
-			if (myUnit.getType().isWorker()) {
+			/*if (myUnit.getType().isWorker()) {
 				game.drawTextScreen(200, 300, Integer.toString(currentState.getSupply()));
 				// If we are above the demanded supply for the next step in the build, build the
 				// building and advance the build
-				if (!(currentState == null) && currentState.getSupply() <= self.supplyUsed()
+				if (!(currentState == null) )
+				{
+					if( currentState.getSupply()*2 <= self.supplyUsed()
 						&& (self.minerals() > (currentState.getUnitType().mineralPrice() + 50))) {
 					buildBuilding(currentState.getUnitType(), myUnit);
 					currentState = currentState.getNext();
+					game.drawTextScreen(200, 200, "changed state");
 					// currentState = null;
 					// break;
+					}
 				}
+				else
+				{
+					System.out.print("error");
+					break;
+				}
+			}*/
+			
+			//hardcode istället -- har vissa problem, alla scvs vill bygga
+			if(myUnit.getType().isWorker() && !myUnit.isConstructing() && self.supplyTotal()-self.supplyUsed()<4 && self.minerals() > 100)
+			{
+				buildBuilding(UnitType.Terran_Supply_Depot,myUnit);
+				//self.minerals() -= 100;
+				break;
+			}
+			
+			if(myUnit.getType().isWorker() && !myUnit.isConstructing() && self.minerals() > 200)
+			{
+				buildBuilding(UnitType.Terran_Barracks,myUnit);
+				//self.minerals() -= 150;
+				break;
 			}
 		}
 	}
