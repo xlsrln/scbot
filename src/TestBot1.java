@@ -12,6 +12,15 @@ public class TestBot1 extends DefaultBWListener {
     
     private Position startingPosition;
     
+    private State currentState;
+
+	private static State state1;
+	private static State state2;
+	private static State state3;
+	private static State state4;
+
+	
+    
     public void run() {
         mirror.getModule().setEventListener(this);
         mirror.startGame();
@@ -89,6 +98,32 @@ public class TestBot1 extends DefaultBWListener {
         
         //find our startingposition
         startingPosition = BWTA.getStartLocation(self).getPosition();
+        
+        //hardcoded stuff
+        state1 = new State();
+        state2 = new State();
+        state3 = new State();
+        state4 = new State();
+        
+        state1.setNext(state2);
+        state2.setNext(state3);
+        state3.setNext(state4);
+        
+        state1.setUnitType(UnitType.Terran_Supply_Depot);
+        state1.setSupply(8);
+        
+        state2.setUnitType(UnitType.Terran_Barracks);
+        state2.setSupply(12);
+        
+        state3.setUnitType(UnitType.Terran_Barracks);
+        state3.setSupply(11);
+        
+        state4.setUnitType(UnitType.Terran_Barracks);
+        state4.setSupply(18);
+        
+        currentState = state1;
+        
+
     }
     
     public void armyManager()
@@ -121,15 +156,98 @@ public class TestBot1 extends DefaultBWListener {
         game.drawTextScreen(10, 25, units.toString());
 	}
     
+    public void stuffBuilder()
+    {
+		for (Unit myUnit : self.getUnits()) {
+			// If it is a worker, check build order.
+			if (myUnit.getType().isWorker()) {
+				game.drawTextScreen(200, 300, Integer.toString(currentState.getSupply()));
+				// If we are above the demanded supply for the next step in the build, build the
+				// building and advance the build
+				if (!(currentState == null) && currentState.getSupply() <= self.supplyUsed()
+						&& (self.minerals() > (currentState.getUnitType().mineralPrice() + 50))) {
+					buildBuilding(currentState.getUnitType(), myUnit);
+					currentState = currentState.getNext();
+					// currentState = null;
+					// break;
+				}
+			}
+		}
+	}
+    
     @Override
     public void onFrame()
     {
-        macroCycle();
+    	stuffBuilder();
+    	macroCycle();
         armyManager();
         writeAllUnitsOnScreen();
     }
 
 	public static void main(String[] args) {
         new TestBot1().run();
+    }
+	
+	
+	public TilePosition getBuildTile(Unit builder, UnitType buildingType, TilePosition aroundTile) {
+		TilePosition ret = null;
+		int maxDist = 3;
+		int stopDist = 40;
+
+		// Refinery, Assimilator, Extractor
+		if (buildingType.isRefinery()) {
+			for (Unit n : game.neutral().getUnits()) {
+				if ((n.getType() == UnitType.Resource_Vespene_Geyser)
+						&& (Math.abs(n.getTilePosition().getX() - aroundTile.getX()) < stopDist)
+						&& (Math.abs(n.getTilePosition().getY() - aroundTile.getY()) < stopDist)) {
+					return n.getTilePosition();
+				}
+			}
+		}
+
+		while ((maxDist < stopDist) && (ret == null)) {
+			for (int i = aroundTile.getX() - maxDist; i <= aroundTile.getX() + maxDist; i++) {
+				for (int j = aroundTile.getY() - maxDist; j <= aroundTile.getY() + maxDist; j++) {
+					if (game.canBuildHere(new TilePosition(i, j), buildingType, builder, false)) {
+						// units that are blocking the tile
+						boolean unitsInWay = false;
+						for (Unit u : game.getAllUnits()) {
+							if (u.getID() == builder.getID())
+								continue;
+							if ((Math.abs(u.getTilePosition().getX() - i) < 4)
+									&& (Math.abs(u.getTilePosition().getY() - j) < 4))
+								unitsInWay = true;
+						}
+						if (!unitsInWay) {
+							return new TilePosition(i, j);
+						}
+						// creep for Zerg
+						if (buildingType.requiresCreep()) {
+							boolean creepMissing = false;
+							for (int k = i; k <= i + buildingType.tileWidth(); k++) {
+								for (int l = j; l <= j + buildingType.tileHeight(); l++) {
+									if (!game.hasCreep(k, l))
+										creepMissing = true;
+									break;
+								}
+							}
+							if (creepMissing)
+								continue;
+						}
+					}
+				}
+			}
+			maxDist += 2;
+		}
+		if (ret == null)
+			game.printf("Unable to find suitable build position for " + buildingType.toString());
+		return ret;
+	}
+	
+    public void buildBuilding(UnitType myBuilding, Unit myUnit) {
+    	TilePosition buildTile = getBuildTile(myUnit, myBuilding,self.getStartLocation());
+		if (buildTile != null) {
+			myUnit.build(myBuilding, buildTile);
+		}   
     }
 }
