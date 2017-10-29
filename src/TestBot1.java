@@ -88,35 +88,36 @@ public class TestBot1 extends DefaultBWListener {
         }
         
         //find our startingposition
-        startingPosition = BWTA.getStartLocation(self);
+        startingPosition = BWTA.getStartLocation(self).getPosition();
     }
     
     public void armyManager()
     {
     	//Position place = new Position(500,500);
     	// send all army to nearest chokepoint
-    	Position place = BWTA.getNearestChokepoint(startingPosition)
+    	Position place = BWTA.getNearestChokepoint(startingPosition).getCenter();
     	
     	for(Unit unit : game.getAllUnits())
     	{
-    		if( !unit.getType().isWorker() )
+    		if( !unit.getType().isWorker() && unit.canAttack() )
     		{
     			unit.attack(place);
     		}
     	}
     }
     
-    private void writeAllUnitsOnScreen() {
-		// TODO Auto-generated method stub
-        //the old code for writing all units on the screen
+    private void writeAllUnitsOnScreen() 
+    {    
+    	//the old code for writing all units on the screen
         game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
+    	
     	StringBuilder units = new StringBuilder("My units:\n");
-        //iterate through my units
+        
+    	//iterate through my units
         for (Unit myUnit : self.getUnits()) 
         {
             units.append(myUnit.getType()).append(" ").append(myUnit.getTilePosition()).append("\n");           
         }
-        //draw my units on screen
         game.drawTextScreen(10, 25, units.toString());
 	}
     
