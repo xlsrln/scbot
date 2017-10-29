@@ -9,7 +9,9 @@ public class TestBot1 extends DefaultBWListener {
     private Game game;
 
     private Player self;
-
+    
+    private Position startingPosition;
+    
     public void run() {
         mirror.getModule().setEventListener(this);
         mirror.startGame();
@@ -74,6 +76,8 @@ public class TestBot1 extends DefaultBWListener {
         BWTA.analyze();
         System.out.println("Map data ready");
         
+        game.enableFlag(1);
+        
         int i = 0;
         for(BaseLocation baseLocation : BWTA.getBaseLocations()){
         	System.out.println("Base location #" + (++i) + ". Printing location's region polygon:");
@@ -82,12 +86,16 @@ public class TestBot1 extends DefaultBWListener {
         	}
         	System.out.println();
         }
-
+        
+        //find our startingposition
+        startingPosition = BWTA.getStartLocation(self);
     }
     
     public void armyManager()
     {
-    	Position place = new Position(0,0);
+    	//Position place = new Position(500,500);
+    	// send all army to nearest chokepoint
+    	Position place = BWTA.getNearestChokepoint(startingPosition)
     	
     	for(Unit unit : game.getAllUnits())
     	{
@@ -97,17 +105,12 @@ public class TestBot1 extends DefaultBWListener {
     		}
     	}
     }
-
-    @Override
-    public void onFrame()
-    {
-        //game.setTextSize(10);
-        game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
-
-        macroCycle();
-
+    
+    private void writeAllUnitsOnScreen() {
+		// TODO Auto-generated method stub
         //the old code for writing all units on the screen
-        StringBuilder units = new StringBuilder("My units:\n");
+        game.drawTextScreen(10, 10, "Playing as " + self.getName() + " - " + self.getRace());
+    	StringBuilder units = new StringBuilder("My units:\n");
         //iterate through my units
         for (Unit myUnit : self.getUnits()) 
         {
@@ -115,9 +118,17 @@ public class TestBot1 extends DefaultBWListener {
         }
         //draw my units on screen
         game.drawTextScreen(10, 25, units.toString());
+	}
+    
+    @Override
+    public void onFrame()
+    {
+        macroCycle();
+        armyManager();
+        writeAllUnitsOnScreen();
     }
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
         new TestBot1().run();
     }
 }
