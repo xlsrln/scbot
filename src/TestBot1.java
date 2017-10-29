@@ -84,6 +84,19 @@ public class TestBot1 extends DefaultBWListener {
         }
 
     }
+    
+    public void armyManager()
+    {
+    	Position place = new Position(0,0);
+    	
+    	for(Unit unit : game.getAllUnits())
+    	{
+    		if( !unit.getType().isWorker() )
+    		{
+    			unit.attack(place);
+    		}
+    	}
+    }
 
     @Override
     public void onFrame()
