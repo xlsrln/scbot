@@ -26,12 +26,12 @@ public class TestBot1 extends DefaultBWListener {
     	for(Unit myUnit : self.getUnits()) 
     	{
             //if there's enough minerals, train an SCV
-            if (myUnit.getType() == UnitType.Terran_Command_Center && self.minerals() >= 50) {
+            if (myUnit.getType() == UnitType.Terran_Command_Center && self.minerals() >= 50 && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_SCV);
             }
             
             //if there's enough minerals, train a marine
-            if (myUnit.getType() == UnitType.Terran_Barracks && self.minerals() >= 50) {
+            if (myUnit.getType() == UnitType.Terran_Barracks && self.minerals() >= 50 && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_Marine);
             }
             
