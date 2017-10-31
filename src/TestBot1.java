@@ -13,6 +13,8 @@ public class TestBot1 extends DefaultBWListener {
     private Position startingPosition;
     
     //private Integer availableMinerals = 0;
+    
+    // LinkedStates initialization
     private LinkedStates buildOrder;
     private State currentState;
 
