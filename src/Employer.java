@@ -5,6 +5,8 @@ import bwta.BaseLocation;
 public class Employer {
 	Unit unit = null;
 	
+	private Player self;
+	
 	public Unit findWorker() {
 		for(Unit u : self.getUnits())
 		{
@@ -12,7 +14,9 @@ public class Employer {
 			{
 				return u;
 			}
+			
 		}
+		
 	}
 	
 	//methods to do stuff with the worker, i.e. build a building

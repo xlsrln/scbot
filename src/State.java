@@ -1,12 +1,23 @@
 import bwapi.*;
-import bwta.BWTA;
-import bwta.BaseLocation;
 
 public class State {
-	int supply = 0;
-	UnitType unitType = null;
-	State nextState = null;
+	// Initializing
+	public int supply;
+	public UnitType unitType;
+	public State nextState;
 	
+	// Constructor
+	public State(int supply, UnitType unitType, State nextState ) {
+		this.supply= supply;
+		this.unitType = unitType;
+		this.nextState = nextState;
+	}
+	
+	public State() {
+		super();
+	}
+	
+	// Methods
 	public int getSupply() {
 		return supply;
 	}

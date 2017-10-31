@@ -13,17 +13,10 @@ public class TestBot1 extends DefaultBWListener {
     private Position startingPosition;
     
     //private Integer availableMinerals = 0;
-    
+    private LinkedStates buildOrder;
     private State currentState;
 
-	private static State state1;
-	private static State state2;
-	private static State state3;
-	private static State state4;
-	private static State state5;
 
-	
-    
     public void run() {
         mirror.getModule().setEventListener(this);
         mirror.startGame();
@@ -108,34 +101,15 @@ public class TestBot1 extends DefaultBWListener {
         startingPosition = BWTA.getStartLocation(self).getPosition();
         
         //hardcoded stuff
-        /*state1 = new State();
-        state2 = new State();
-        state3 = new State();
-        state4 = new State();
-        state5 = new State();
         
-        state1.setNext(state2);
-        state2.setNext(state3);
-        state3.setNext(state4);
-        state4.setNext(state5);
-        state5.setNext(state5);
         
-        state1.setUnitType(UnitType.Terran_Supply_Depot);
-        state1.setSupply(8);
+        buildOrder = new LinkedStates();
+        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
+        buildOrder.addFirst(12, UnitType.Terran_Barracks);
+        buildOrder.addFirst(11, UnitType.Terran_Barracks);
+        buildOrder.addFirst(8, UnitType.Terran_Supply_Depot);
         
-        state2.setUnitType(UnitType.Terran_Barracks);
-        state2.setSupply(12);
-        
-        state3.setUnitType(UnitType.Terran_Barracks);
-        state3.setSupply(11);
-        
-        state4.setUnitType(UnitType.Terran_Supply_Depot);
-        state4.setSupply(15);
-        
-        state5.setUnitType(UnitType.Terran_Barracks);
-        state5.setSupply(200);
-        
-        currentState = state1;*/
+        currentState = buildOrder.getFirst();
         
 
     }
@@ -175,10 +149,10 @@ public class TestBot1 extends DefaultBWListener {
     	//System.out.print(self.minerals());
 		for (Unit myUnit : self.getUnits()) {
 			// If it is a worker, check build order.
-			/*if (myUnit.getType().isWorker()) {
+			if (myUnit.getType().isWorker()) {
 				game.drawTextScreen(200, 300, Integer.toString(currentState.getSupply()));
 				// If we are above the demanded supply for the next step in the build, build the
-				// building and advance the build
+				// building and advance the buildOrder
 				if (!(currentState == null) )
 				{
 					if( currentState.getSupply()*2 <= self.supplyUsed()
@@ -195,8 +169,9 @@ public class TestBot1 extends DefaultBWListener {
 					System.out.print("error");
 					break;
 				}
-			}*/
+			}
 			
+			/*
 			//hardcode istället -- har vissa problem, alla scvs vill bygga
 			if(myUnit.getType().isWorker() && !myUnit.isConstructing() && self.supplyTotal()-self.supplyUsed()<4 && self.minerals() > 100)
 			{
@@ -211,6 +186,7 @@ public class TestBot1 extends DefaultBWListener {
 				//self.minerals() -= 150;
 				break;
 			}
+			*/
 		}
 	}
     
