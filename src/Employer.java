@@ -12,11 +12,9 @@ public class Employer {
 				unit = u;
 			}
 		}
-<<<<<<< Updated upstream
-=======
+
 		return unit;
 		
->>>>>>> Stashed changes
 	}
 	
 	//methods to do stuff with the worker, i.e. build a building
