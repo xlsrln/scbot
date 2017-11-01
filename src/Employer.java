@@ -1,21 +1,19 @@
 import bwapi.*;
-import bwta.BWTA;
-import bwta.BaseLocation;
 
 public class Employer {
 	Unit unit = null;
 	
-	private Player self;
-	
 	public Unit findWorker() {
+		Unit unit = null;
 		for(Unit u : self.getUnits())
 		{
 			if(u.getType().isWorker())
 			{
-				return u;
+				unit = u;
 			}
-			
 		}
+
+		return unit;
 		
 	}
 	
