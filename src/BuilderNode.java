@@ -36,6 +36,8 @@ public class BuilderNode {
 			return false;
 		}
 		else {
+			//System.out.println("at hasBegunConstruction");
+			//System.out.println(unit.canHaltConstruction());
 			return unit.canHaltConstruction(); // TERRAN HARDCODED...	
 					
 		}				
@@ -55,5 +57,11 @@ public class BuilderNode {
 	
 	public void setNextBuilderNode(BuilderNode nextBuilderNode) {
 		this.nextBuilderNode = nextBuilderNode;
+	}
+	public int getRequiredMinerals() {
+		return requiredMin;
+	}
+	public int getRequiredGas() {
+		return requiredGas;
 	}
 }

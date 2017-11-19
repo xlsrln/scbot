@@ -1,7 +1,13 @@
 import bwapi.*;
 
 public class Employer {
+	// Initialization
 	Unit unit = null;
+	Player self;
+	//Constructor
+	public Employer(Player self) {
+		this.self = self;
+	}
 	
 	public Unit findWorker() {
 		Unit unit = null;
