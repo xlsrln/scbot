@@ -1,7 +1,4 @@
 import bwapi.*;
-import java.awt.*;
-import java.util.ArrayList;
-
 import bwta.BWTA;
 import bwta.BaseLocation;
 
@@ -22,7 +19,7 @@ public class TestBot1 extends DefaultBWListener {
     // Resource initialization
     private ResourceManager resourceManager;
 
-    // Used for signifying the very first frame of the game
+    // Used for signifying the very first frame of the game haha
     private Boolean firstFrame = true;
 
     // splits the first four workers haha
@@ -63,7 +60,7 @@ public class TestBot1 extends DefaultBWListener {
     	}
     	
     }
-    
+
     public void run() {
         mirror.getModule().setEventListener(this);
         mirror.startGame();
@@ -83,13 +80,11 @@ public class TestBot1 extends DefaultBWListener {
             //if there's enough minerals, train an SCV
             if (myUnit.getType() == UnitType.Terran_Command_Center && resourceManager.canSpend(self.minerals(), self.gas(), 50, 0) && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_SCV);
-                //self.minerals() -= 50;
             }
             
             //if there's enough minerals, train a marine
             if (myUnit.getType() == UnitType.Terran_Barracks && resourceManager.canSpend(self.minerals(), self.gas(), 50, 0) && !myUnit.isTraining()) {
                 myUnit.train(UnitType.Terran_Marine);
-                //self.minerals() -= 50;
             }
             
             // if it's a worker and it's idle, send it to the closest mineral patch
@@ -150,43 +145,15 @@ public class TestBot1 extends DefaultBWListener {
         
         
         buildOrder = new LinkedStates();
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(22, UnitType.Terran_Barracks);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(18, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(12, UnitType.Terran_Barracks);
-        buildOrder.addFirst(11, UnitType.Terran_Barracks);
+
+        buildOrder.addFirst(8, UnitType.Terran_Supply_Depot);
         buildOrder.addFirst(8, UnitType.Terran_Supply_Depot);
         
         currentState = buildOrder.getFirst();
         
-
-        
         // Resource Manager
         resourceManager = new ResourceManager();
-        
+
     }
     
     public void armyManager()
@@ -195,9 +162,9 @@ public class TestBot1 extends DefaultBWListener {
     	// send all army to nearest chokepoint
     	Position place = BWTA.getNearestChokepoint(startingPosition).getCenter();
     	
-    	for(Unit unit : game.getAllUnits())
+    	for(Unit unit : self.getUnits())
     	{
-    		if( !unit.getType().isWorker() && unit.canAttack() )
+    		if( !unit.getType().isWorker() && unit.canAttack())
     		{
     			unit.attack(place);
     		}
@@ -223,30 +190,36 @@ public class TestBot1 extends DefaultBWListener {
     {
     	// Displayes resources on-screen
 		resourceManager.updateResources(self.minerals(),self.gas());
-		game.drawTextScreen(200, 300, "Next building: " + currentState.getUnitType() + "at " + Integer.toString( currentState.getSupply()) + " supply.");
-		game.drawTextScreen(200, 310, "Current Minerals: " + Integer.toString(resourceManager.resources));
-		game.drawTextScreen(200, 320, "Allocated Minerals: " + Integer.toString(resourceManager.allocatedResources));
-		game.drawTextScreen(200, 330, "Available Minerals: " + Integer.toString(resourceManager.availableResources));
+		game.drawTextScreen(200, 300, "Next building: " + currentState.getUnitType() + " at " + Integer.toString( currentState.getSupply()) + " supply.");
+		game.drawTextScreen(200, 310, "Current Minerals: " + Integer.toString(resourceManager.totalMinerals));
+		game.drawTextScreen(200, 320, "Allocated Minerals: " + Integer.toString(resourceManager.allocatedMinerals)); 
+		game.drawTextScreen(200, 330, "Available Minerals: " + Integer.toString(resourceManager.availableMinerals));
+		game.drawTextScreen(330, 310, "Current Gas: " + Integer.toString(resourceManager.totalGas));
+		game.drawTextScreen(330, 320, "Allocated Gas: " + Integer.toString(resourceManager.allocatedGas)); 
+		game.drawTextScreen(330, 330, "Available Gas: " + Integer.toString(resourceManager.availableGas));
+		
+		
 		for (Unit myUnit : self.getUnits()) {
 			// If it is a worker, check build order.
-			if (myUnit.getType().isWorker() && !myUnit.isConstructing()) {
+			if (myUnit.getType().isWorker() && !myUnit.isConstructing() && !myUnit.isBeingConstructed() && myUnit.exists()) {
 				// If we are above the demanded supply for the next step in the build, build the
 				// building and advance the buildOrder
 				if (!(currentState == null) )
 				{
-					if( currentState.getSupply()*2 <= self.supplyUsed()
+					if( (currentState.getSupply()*2 <= self.supplyUsed())
 						&& (resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice()))) {
-						// New Resource Code
-						resourceManager.updateResources(self.minerals(),self.gas());
+						
+						if (!resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice())) {
+							System.out.println("Error: Available minerals lower then demanded minerals");
+							System.out.println("canSpend bool: " + Boolean.toString(resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice())));
+							System.out.print(resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice()));
+						}
 						resourceManager.spendResource(myUnit,self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice());
 						buildBuilding(currentState.getUnitType(), myUnit);
+						System.out.println(myUnit);
 						currentState = currentState.getNext();
+						break;
 					}
-				}
-				else
-				{
-					System.out.print("error");
-					break;
 				}
 			}
 		}
@@ -255,7 +228,6 @@ public class TestBot1 extends DefaultBWListener {
     @Override
     public void onFrame()
     {
-
     	if (firstFrame) {
     		initialSplit();
     		firstFrame = false;
@@ -333,4 +305,5 @@ public class TestBot1 extends DefaultBWListener {
 			myUnit.build(myBuilding, buildTile);
 		}   
     }
+    
 }
