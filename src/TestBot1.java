@@ -1,6 +1,7 @@
 import bwapi.*;
 import bwta.BWTA;
 import bwta.BaseLocation;
+import java.util.*;
 
 public class TestBot1 extends DefaultBWListener {
 
@@ -69,6 +70,7 @@ public class TestBot1 extends DefaultBWListener {
     @Override
     public void onUnitCreate(Unit unit) {
         System.out.println("New unit discovered " + unit.getType());
+        armyManager();
     }
 
     public void macroCycle()
@@ -127,7 +129,7 @@ public class TestBot1 extends DefaultBWListener {
         System.out.println("Map data ready");
         
         game.enableFlag(1);
-        game.setLocalSpeed(8);
+        game.setLocalSpeed(60);
         
         int i = 0;
         for(BaseLocation baseLocation : BWTA.getBaseLocations()){
@@ -235,7 +237,7 @@ public class TestBot1 extends DefaultBWListener {
     	
     	stuffBuilder();
     	macroCycle();
-        armyManager();
+        //armyManager();
         writeAllUnitsOnScreen();
     }
 
