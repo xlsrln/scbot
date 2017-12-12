@@ -8,7 +8,7 @@ public class LinkedStates extends State {
 	
 	// Constructor
 	public LinkedStates() {
-		head = new State(400, UnitType.Terran_Supply_Depot, null);
+		head = new State(400, UnitType.Terran_Barracks, null);
 	}
 	
 	// Methods
@@ -20,13 +20,13 @@ public class LinkedStates extends State {
 		head = new State(supply, unitType, this.head );
 		
 	}
-	public State getFirst()
-	   {
+	public State getFirst() {
+		
 	      if(isEmpty()) {
-	    	  return new State(400, UnitType.Terran_Supply_Depot, null);
+	    	  return new State(400, UnitType.Terran_Barracks, null);
 	      }
 	      else {
-	    	  return head;
+			return head;
 	      }
 	}
 	

@@ -16,9 +16,10 @@ public class TestBot1 extends DefaultBWListener {
     private LinkedStates buildOrder;
     private State currentState;
     
-    // Resource initialization
+    // Initialization
     private ResourceManager resourceManager;
-
+    private SupplyManager supplyManager;
+    private WorkerManager workerManager;
 
     public void run() {
         mirror.getModule().setEventListener(this);
@@ -27,7 +28,25 @@ public class TestBot1 extends DefaultBWListener {
 
     @Override
     public void onUnitCreate(Unit unit) {
-        System.out.println("New unit discovered " + unit.getType());
+        System.out.println("New unit discovered " + unit.getType() );
+    }
+    
+    @Override
+    public void onUnitComplete(Unit unit) {
+    	if(unit.getType() == UnitType.Terran_Supply_Depot) {
+    		supplyManager.complete();
+    		} 
+    	if (unit.getType().isWorker()) {
+    		workerManager.addWorker(unit);
+    		} 
+    	if (unit.getType() == UnitType.Terran_Command_Center) {
+    		workerManager.addCommandCenter(unit);
+    	}
+    	if (unit.getType() == UnitType.Terran_Marine) {
+    		Position place = BWTA.getNearestChokepoint(startingPosition).getCenter();
+        	unit.attack(place);
+    	}
+    	
     }
 
     public void macroCycle()
@@ -36,8 +55,11 @@ public class TestBot1 extends DefaultBWListener {
     	for(Unit myUnit : self.getUnits()) 
     	{
     		
-            //if there's enough minerals, train an SCV
-            if (myUnit.getType() == UnitType.Terran_Command_Center && resourceManager.canSpend(self.minerals(), self.gas(), 50, 0) && !myUnit.isTraining()) {
+            //if there's enough minerals, train an SCV. Number of workers are capped at 22*#CC
+            if (myUnit.getType() == UnitType.Terran_Command_Center
+            						&& resourceManager.canSpend(self.minerals(), self.gas(), 50, 0) 
+            						&& !myUnit.isTraining()    
+            						&& workerManager.numWorkers() < workerManager.numCommandCenters()*22) {
                 myUnit.train(UnitType.Terran_SCV);
             }
             
@@ -105,14 +127,16 @@ public class TestBot1 extends DefaultBWListener {
         
         buildOrder = new LinkedStates();
 
-        buildOrder.addFirst(8, UnitType.Terran_Supply_Depot);
-        buildOrder.addFirst(8, UnitType.Terran_Supply_Depot);
+        buildOrder.addFirst(10, UnitType.Terran_Barracks);
+        buildOrder.addFirst(10, UnitType.Terran_Barracks);
+        buildOrder.addFirst(10, UnitType.Terran_Barracks);
         
         currentState = buildOrder.getFirst();
         
-        // Resource Manager
+        // Managers
         resourceManager = new ResourceManager();
-
+        supplyManager = new SupplyManager();
+        workerManager = new WorkerManager();
     }
     
     public void armyManager()
@@ -121,14 +145,44 @@ public class TestBot1 extends DefaultBWListener {
     	// send all army to nearest chokepoint
     	Position place = BWTA.getNearestChokepoint(startingPosition).getCenter();
     	
-    	for(Unit unit : self.getUnits())
-    	{
-    		if( !unit.getType().isWorker() && unit.canAttack())
-    		{
-    			unit.attack(place);
+//    	CAUSES THE MARINES TO NOT ATTACK 
+//    	for(Unit unit : self.getUnits())
+//    	{
+//    		if( !unit.getType().isWorker() && unit.canAttack())
+//    		{
+//    			unit.attack(place);
+//    		}
+//    	}
+    }
+    
+    private void buildSupply() {  // UNDER CONSTRUCTION (Markus 17-12-06)
+    	// Check if a new supply depot is needed and affordable.
+    	if (self.supplyTotal()>100) {}
+    	else if (self.supplyTotal()>=84) {
+    		supplyManager.setSupplyMax(2);
+    		// TODO: does seem to be 2/2 and hence only build 1 at a time :(
+    	}
+    	if (self.supplyUsed() + 8 >= self.supplyTotal() && resourceManager.canSpend(self.minerals(), self.gas(), 100, 0) ) {
+    		if (currentState.unitType != UnitType.Terran_Supply_Depot && supplyManager.canConstruct()) {
+    			supplyManager.construct();
+    			System.out.println(" constr. supply/max: "+ supplyManager.getConstructingSupply()+"/"+supplyManager.getSupplyMax());
+    			currentState = new State(0,UnitType.Terran_Supply_Depot,currentState);
     		}
     	}
     }
+    
+    
+    
+    private Unit findWorker() {
+		Unit unit = null;
+    	for(Unit u : self.getUnits()) {
+			if(u.isGatheringMinerals())  {
+				unit = u;
+				break;
+			}
+		}
+		return unit;
+	}
     
     private void writeAllUnitsOnScreen() 
     {    
@@ -173,7 +227,7 @@ public class TestBot1 extends DefaultBWListener {
 							System.out.println("canSpend bool: " + Boolean.toString(resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice())));
 							System.out.print(resourceManager.canSpend(self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice()));
 						}
-						resourceManager.spendResource(myUnit,self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice());
+						// resourceManager.spendResource(myUnit,self.minerals(),self.gas(), currentState.getUnitType().mineralPrice(), currentState.getUnitType().gasPrice());
 						buildBuilding(currentState.getUnitType(), myUnit);
 						System.out.println(myUnit);
 						currentState = currentState.getNext();
@@ -188,6 +242,7 @@ public class TestBot1 extends DefaultBWListener {
     public void onFrame()
     {
     	stuffBuilder();
+    	buildSupply();
     	macroCycle();
         armyManager();
         writeAllUnitsOnScreen();
@@ -254,9 +309,12 @@ public class TestBot1 extends DefaultBWListener {
 	}
 	
     public void buildBuilding(UnitType myBuilding, Unit myUnit) {
-    	TilePosition buildTile = getBuildTile(myUnit, myBuilding,self.getStartLocation());
-		if (buildTile != null) {
-			myUnit.build(myBuilding, buildTile);
+    	if (myUnit != null) {
+	    	resourceManager.spendResource(myUnit,self.minerals(),self.gas(), myBuilding.mineralPrice(), myBuilding.gasPrice());
+	    	TilePosition buildTile = getBuildTile(myUnit, myBuilding,self.getStartLocation());
+			if (buildTile != null) {
+				myUnit.build(myBuilding, buildTile);
+			}
 		}   
     }
     
